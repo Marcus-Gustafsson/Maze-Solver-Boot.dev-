@@ -44,8 +44,8 @@ class Window:
         self.height: int = height
         self.__root_widget = Tk()
         self.__root_widget.title("Maze Solver")
-        self.canvas = Canvas()
-        self.canvas.pack()
+        self.canvas = Canvas(self.__root_widget, bg="white", height=height, width=width)
+        self.canvas.pack(fill=BOTH, expand=1)
         self.window_running: bool = False
         self.__root_widget.protocol("WM_DELETE_WINDOW", self.close)
 

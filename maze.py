@@ -1,53 +1,77 @@
-from graphics import *
+from graphics import Cell, Point
+import time
 
-class Maze():
-
-    """
-    It initializes data members for all its inputs, then calls its _create_cells() method
-    """
-
+class Maze:
     def __init__(
         self,
-        x1: int,
-        y1: int,
-        num_rows: int,
-        num_cols: int,
-        cell_size_x: int,
-        cell_size_y: int,
-        win: Window,
-    ) -> None:
-        pass
+        top_left: Point,
+        num_rows,
+        num_cols,
+        cell_size_x,
+        cell_size_y,
+        win,
+    ):
+        # Store parameters as attributes
+        self._x1 = top_left.x  # x-coordinate of top-left corner of the maze
+        self._y1 = top_left.y  # y-coordinate of top-left corner of the maze
+        self._num_rows = num_rows  # Number of rows in the maze
+        self._num_cols = num_cols  # Number of columns in the maze
+        self._cell_size_x = cell_size_x  # Width of each cell
+        self._cell_size_y = cell_size_y  # Height of each cell
+        self._win = win  # Window to draw on
 
+        # Initialize the 2D list of cells
+        self._cells = []
 
-    def _create_cell(self) -> None:
+        # Create the maze's cells
+        self._create_cells()
+
+    def _create_cells(self):
         """
-        This method should fill a self._cells list with lists of cells. 
-        Each top-level list is a column of Cell objects. 
-        Once the matrix is populated it should call its _draw_cell() method on each Cell.
-        
+        This method populates self._cells with rows and columns of Cell objects.
+        Each cell is created with its top-left and bottom-right points.
         """
-        pass
+        # Loop over columns
+        for i in range(self._num_cols):
+            col_cells = []  # Create a new list for this column
+            # Loop over rows
+            for j in range(self._num_rows):
+                # Calculate the top-left and bottom-right points for each cell
+                top_left_x = self._x1 + i * self._cell_size_x
+                top_left_y = self._y1 + j * self._cell_size_y
+                bottom_right_x = top_left_x + self._cell_size_x
+                bottom_right_y = top_left_y + self._cell_size_y
+                
+                # Create a new Point object for top-left and bottom-right
+                top_left = Point(top_left_x, top_left_y)
+                bottom_right = Point(bottom_right_x, bottom_right_y)
 
+                # Create the new Cell and add it to the column
+                cell = Cell(top_left, bottom_right, self._win)
+                col_cells.append(cell)
+            
+            # Add the column of cells to the main list of cells
+            self._cells.append(col_cells)
 
-    def _draw_cell(self, i, j) -> None:
+        # Draw all the cells
+        for i in range(self._num_cols):
+            for j in range(self._num_rows):
+                self._draw_cell(i, j)
+
+    def _draw_cell(self, i, j):
         """
-        This method should calculate the x/y position of the Cell based on i, j, the cell_size, 
-        and the x/y position of the Maze itself. 
-        
-        The x/y position of the maze represents how many pixels from the top and left 
-        the maze should start from the side of the window.
-
-        Once that's calculated, it should draw the cell and call the maze's _animate() method.
-        
+        This method simply draws the cell at position (i, j).
         """
-        pass
+        # Retrieve the cell from the list
+        cell = self._cells[i][j]
+        # Draw the cell
+        cell.draw()
+        # Animate the drawing process
+        self._animate()
 
-    def _animate(self) -> None:
-
+    def _animate(self):
         """
-        The animate method is what allows us to visualize what the algorithms are doing in real time. 
-        It should simply call the window's redraw() method, then sleep for a short amount of time so your eyes keep up with each render frame. 
-        I slept for 0.05 seconds.
-        
+        This method redraws the window and adds a small delay to create a visible animation.
         """
-        pass
+        self._win.redraw()  # Update the window
+        time.sleep(0.05)    # Pause for 0.05 seconds to slow down the animation
