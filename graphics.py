@@ -36,6 +36,7 @@ class Line():
         """
         canvas.create_line(self.start_point.x, self.start_point.y, self.end_point.x, self.end_point.y, fill=fill_color, width=2)
 
+
 class Window:
 
     def __init__(self, width: int, height: int) -> None:
@@ -89,3 +90,57 @@ class Window:
 
 
 
+
+class Cell:
+
+    def __init__(self, top_left: Point, bottom_right: Point, window: Window) -> None:
+        self.has_left_wall: bool = True
+        self.has_right_wall: bool = True
+        self.has_top_wall: bool = True
+        self.has_bottom_wall: bool = True
+        self.top_left: Point = top_left
+        self._win: Window = window
+
+        # Calculate width and height
+        width = bottom_right.x - top_left.x
+        height = bottom_right.y - top_left.y
+
+        # Adjust to ensure it's a square
+        # smaller of the two (width or height) to keep it a square.
+        side_length = min(width, height)
+
+        # Update bottom_right based on the adjusted side_length
+        self.bottom_right: Point = Point(top_left.x + side_length, top_left.y + side_length)
+        
+        # Calculate other corners
+        self.bottom_left: Point = Point(top_left.x, top_left.y + side_length)
+        self.top_right: Point = Point(top_left.x + side_length, top_left.y)
+
+        self.middle: Point = Point((self.bottom_right.x + self.top_left.x) // 2, (self.bottom_right.y + self.top_left.y) // 2)
+
+
+    def draw(self) -> None:
+        """
+        Draw the walls of the cell.
+        """
+        if self.has_left_wall:
+            self._win.draw_line(Line(self.bottom_left, self.top_left),"green")
+
+        if self.has_top_wall:
+            self._win.draw_line(Line(self.top_left, self.top_right),"green")
+
+        if self.has_right_wall:
+            self._win.draw_line(Line(self.top_right, self.bottom_right),"green")
+
+        if self.has_bottom_wall:
+            self._win.draw_line(Line(self.bottom_right, self.bottom_left),"green")
+
+    
+    def draw_move(self, to_cell, undo: bool = False) -> None:
+
+        if not undo:
+            line_to_draw = Line(self.middle, to_cell.middle)
+            self._win.draw_line(line_to_draw,"red")
+        else:
+            line_to_draw = Line(self.middle, to_cell.middle)
+            self._win.draw_line(line_to_draw, "gray")
