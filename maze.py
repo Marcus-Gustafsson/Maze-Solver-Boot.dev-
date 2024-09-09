@@ -3,238 +3,243 @@ import time
 import random
 
 class Maze:
-    def __init__(
-        self,
-        top_left: Point,
-        num_rows,
-        num_cols,
-        cell_size_x,
-        cell_size_y,
-        win = None,
-        seed = None
-    ):
-        # Store parameters as attributes
-        self._x1 = top_left.x  # x-coordinate of top-left corner of the maze
-        self._y1 = top_left.y  # y-coordinate of top-left corner of the maze
-        self._num_rows = num_rows  # Number of rows in the maze
-        self._num_cols = num_cols  # Number of columns in the maze
-        self._cell_size_x = cell_size_x  # Width of each cell
-        self._cell_size_y = cell_size_y  # Height of each cell
-        self._win = win  # Window to draw on
-        if seed != None:
+    """
+    The Maze class manages the creation, drawing, and solving of a maze.
+    
+    Attributes:
+        _x1 (int): The x-coordinate of the top-left corner of the maze.
+        _y1 (int): The y-coordinate of the top-left corner of the maze.
+        _num_rows (int): The number of rows in the maze.
+        _num_cols (int): The number of columns in the maze.
+        _cell_size_x (int): The width of each cell.
+        _cell_size_y (int): The height of each cell.
+        _win (Window): The window object to draw the maze on.
+        _cells (list): A 2D list holding the maze's cells.
+    """
+    
+    def __init__(self, top_left: Point, num_rows: int, num_cols: int, 
+                 cell_size_x: int, cell_size_y: int, win=None, seed=None) -> None:
+        """
+        Initializes a maze with the given parameters, creates the cells, and breaks the entrance and exit walls.
+
+        Args:
+            top_left (Point): The top-left corner of the maze.
+            num_rows (int): The number of rows in the maze.
+            num_cols (int): The number of columns in the maze.
+            cell_size_x (int): The width of each cell.
+            cell_size_y (int): The height of each cell.
+            win (Window, optional): The window object where the maze will be drawn. Defaults to None.
+            seed (int, optional): Seed for randomizing the maze generation. Defaults to None.
+        """
+        self._x1 = top_left.x
+        self._y1 = top_left.y
+        self._num_rows = num_rows
+        self._num_cols = num_cols
+        self._cell_size_x = cell_size_x
+        self._cell_size_y = cell_size_y
+        self._win = win
+        if seed is not None:
             random.seed(seed)
 
         self.cell_creation_delay = 0.01  # Fast creation of cells
         self.wall_breaking_delay = 0.02  # Slightly slower wall-breaking
-        self.pathfinding_delay = 0.3     # Slower pathfinding
-
+        self.pathfinding_delay = 0.08    # Slower pathfinding
 
         # Initialize the 2D list of cells
         self._cells = []
-
-        # Create the maze's cells
         self._create_cells()
-
         self._break_entrance_and_exit()
-        self._break_walls_r(0,0)
+        self._break_walls_r(0, 0)
         self._reset_cells_visited()
 
-    def _create_cells(self):
+    def _create_cells(self) -> None:
         """
-        This method populates self._cells with rows and columns of Cell objects.
-        Each cell is created with its top-left and bottom-right points.
+        Populates the maze with cells based on the number of rows and columns. 
+        Each cell is initialized with its top-left and bottom-right coordinates.
         """
-        # Loop over columns
         for i in range(self._num_cols):
-            col_cells = []  # Create a new list for this column
-            # Loop over rows
+            col_cells = []
             for j in range(self._num_rows):
-                # Calculate the top-left and bottom-right points for each cell
+                # Calculate cell coordinates
                 top_left_x = self._x1 + i * self._cell_size_x
                 top_left_y = self._y1 + j * self._cell_size_y
                 bottom_right_x = top_left_x + self._cell_size_x
                 bottom_right_y = top_left_y + self._cell_size_y
-                
-                # Create a new Point object for top-left and bottom-right
+
+                # Create the cell and append it to the column list
                 top_left = Point(top_left_x, top_left_y)
                 bottom_right = Point(bottom_right_x, bottom_right_y)
-
-                # Create the new Cell and add it to the column
                 cell = Cell(top_left, bottom_right, self._win)
                 col_cells.append(cell)
-            
-            # Add the column of cells to the main list of cells
+            # Add the column of cells to the main cell list
             self._cells.append(col_cells)
 
-        # Draw all the cells
+        # Draw all cells
         for i in range(self._num_cols):
             for j in range(self._num_rows):
                 self._draw_cell(i, j)
 
-    def _draw_cell(self, i, j) -> None:
+    def _draw_cell(self, i: int, j: int) -> None:
         """
-        This method simply draws the cell at position (i, j).
+        Draws the cell at position (i, j) and animates the drawing process.
+
+        Args:
+            i (int): The column index of the cell.
+            j (int): The row index of the cell.
         """
         if self._win is None:
             return
-        # Retrieve the cell from the list
         cell = self._cells[i][j]
-        # Draw the cell
         cell.draw()
-        # Animate the drawing process
         self._animate(self.cell_creation_delay)
 
     def _animate(self, delay: float = 0.1) -> None:
         """
-        This method redraws the window and adds a small delay to create a visible animation.
-        The delay can be passed as a parameter to control the animation speed.
+        Redraws the window with a given delay for animation.
+
+        Args:
+            delay (float, optional): The time to pause for animation. Defaults to 0.1 seconds.
         """
         if self._win is None:
             return
-        self._win.redraw()  # Update the window
-        time.sleep(delay)  # Pause based on the provided delay
+        self._win.redraw()
+        time.sleep(delay)
 
-
-    
     def _break_entrance_and_exit(self) -> None:
         """
-        Breaks down the entrance wall and exit wall to the maze (top top-left = entrance, bottom bottom-right = exit)
+        Breaks down the entrance (top-left) and exit (bottom-right) walls. 
+        Places Zelda at the exit.
         """
+        # Break the entrance (top-left corner)
         self._cells[0][0].has_top_wall = False
         self._draw_cell(0, 0)
+
+        # Break the exit (bottom-right corner)
         self._cells[self._num_cols - 1][self._num_rows - 1].has_bottom_wall = False
         self._draw_cell(self._num_cols - 1, self._num_rows - 1)
 
-    def _break_walls_r(self, i, j):
+        # Position Zelda at the midpoint of the bottom wall
+        exit_cell = self._cells[self._num_cols - 1][self._num_rows - 1]
+        midpoint_x = (exit_cell.bottom_left.x + exit_cell.bottom_right.x) // 2
+        midpoint_y = exit_cell.bottom_right.y
+        self._win.create_zelda_sprite(midpoint_x, midpoint_y + 15)
+
+    def _break_walls_r(self, i: int, j: int) -> None:
         """
-        Depth-first traversal through the cells, breaking down walls as it goes.
+        Recursively breaks walls using depth-first traversal.
+
+        Args:
+            i (int): The column index of the current cell.
+            j (int): The row index of the current cell.
         """
-        # 1. Mark the current cell as visited
         current_cell = self._cells[i][j]
-        current_cell.visited = True  # Add a 'visited' attribute to the Cell class
+        current_cell.visited = True
 
-        # 2. Infinite loop to keep exploring until we can't go any further
         while True:
-            to_visit = []  # Create a list to hold neighboring cells that are valid to visit
-
-            # 3. Check neighboring cells (up, down, left, right) if they're within bounds and not visited
-
-            # Move Up: Check the cell above (i, j-1)
+            to_visit = []
+            # Check all valid neighboring cells that haven't been visited
             if j > 0 and not self._cells[i][j - 1].visited:
                 to_visit.append(("up", i, j - 1))
-
-            # Move Down: Check the cell below (i, j+1)
             if j < self._num_rows - 1 and not self._cells[i][j + 1].visited:
                 to_visit.append(("down", i, j + 1))
-
-            # Move Left: Check the cell to the left (i-1, j)
             if i > 0 and not self._cells[i - 1][j].visited:
                 to_visit.append(("left", i - 1, j))
-
-            # Move Right: Check the cell to the right (i+1, j)
             if i < self._num_cols - 1 and not self._cells[i + 1][j].visited:
                 to_visit.append(("right", i + 1, j))
 
-            # 4. If there are no cells to visit, return to stop the recursion
             if len(to_visit) == 0:
-                self._draw_cell(i, j)  # Draw the current cell
+                self._draw_cell(i, j)
                 return
 
-            # 5. Pick a random direction from the possible directions
             direction, ni, nj = random.choice(to_visit)
 
-            # 6. Knock down the wall between the current cell and the chosen cell
+            # Break down walls between current cell and selected neighboring cell
             if direction == "up":
-                # Remove the top wall of the current cell and the bottom wall of the above cell
                 current_cell.has_top_wall = False
                 self._cells[ni][nj].has_bottom_wall = False
-
             elif direction == "down":
-                # Remove the bottom wall of the current cell and the top wall of the below cell
                 current_cell.has_bottom_wall = False
                 self._cells[ni][nj].has_top_wall = False
-
             elif direction == "left":
-                # Remove the left wall of the current cell and the right wall of the left cell
                 current_cell.has_left_wall = False
                 self._cells[ni][nj].has_right_wall = False
-
             elif direction == "right":
-                # Remove the right wall of the current cell and the left wall of the right cell
                 current_cell.has_right_wall = False
                 self._cells[ni][nj].has_left_wall = False
 
-            # 7. Move to the chosen neighboring cell and recursively call _break_walls_r
             self._break_walls_r(ni, nj)
 
-    
-    def _reset_cells_visited(self):
+    def _reset_cells_visited(self) -> None:
+        """Resets the visited status of all cells."""
         for col in self._cells:
             for cell in col:
                 cell.visited = False
 
-    
-
-    def solve(self, i: int, j: int) -> None:
+    def solve(self, i: int, j: int) -> bool:
         """
-        The solve() method starts the maze-solving process from the given (i, j) coordinates.
-        It calls the _solve_r method recursively to explore the maze.
+        Starts the maze-solving process from the given (i, j) coordinates.
+
+        Args:
+            i (int): The starting column index.
+            j (int): The starting row index.
+
+        Returns:
+            bool: True if the maze is solved, False otherwise.
         """
         return self._solve_r(i, j)
 
-
     def _solve_r(self, i: int, j: int) -> bool:
         """
-        Depth-first solution to the maze.
-        Returns True if the current cell leads to the exit, False if it is a dead end.
+        Recursively solves the maze using depth-first search.
+
+        Args:
+            i (int): The column index of the current cell.
+            j (int): The row index of the current cell.
+
+        Returns:
+            bool: True if the maze is solved, False otherwise.
         """
-        # 1. Animate the movement by redrawing the window.
+        # Animate the pathfinding process to make it visible to the user (slow it down by the defined delay)
         self._animate(self.pathfinding_delay)
 
-        # 2. Mark the current cell as visited.
+        # Retrieve the current cell at position (i, j)
         current_cell = self._cells[i][j]
+        
+        # Mark this cell as visited to avoid revisiting it
         current_cell.visited = True
 
-        # 3. Check if this is the "end" cell (bottom-right corner of the maze).
+        # Check if the current cell is the exit (bottom-right corner of the maze)
         if i == self._num_cols - 1 and j == self._num_rows - 1:
-            return True  # Found the exit!
+            # If we're at the exit, return True indicating the maze has been solved
+            return True
 
-        # 4. Explore neighboring cells (DFS).
+        # Prepare to explore neighboring cells in all four directions: up, down, left, right
+        # The 'valid' flag indicates whether there is no wall blocking the movement in that direction
+        directions = [
+            ("up", i, j - 1, not current_cell.has_top_wall),    # Move up, if no top wall
+            ("down", i, j + 1, not current_cell.has_bottom_wall), # Move down, if no bottom wall
+            ("left", i - 1, j, not current_cell.has_left_wall),   # Move left, if no left wall
+            ("right", i + 1, j, not current_cell.has_right_wall)  # Move right, if no right wall
+        ]
 
-        # Move Up: Check the cell above (i, j-1) if there is no wall and it is not visited.
-        if j > 0 and not current_cell.has_top_wall and not self._cells[i][j - 1].visited:
-            current_cell.draw_move(self._cells[i][j - 1])
-            if self._solve_r(i, j - 1):
-                return True
-            else:
-                current_cell.draw_move(self._cells[i][j - 1], undo=True)
+        # Iterate over each direction (up, down, left, right)
+        for direction, ni, nj, valid in directions:
+            # Check if the direction is valid (i.e., no wall) and if the target cell is within maze bounds and not visited
+            if valid and 0 <= ni < self._num_cols and 0 <= nj < self._num_rows and not self._cells[ni][nj].visited:
+                # Move to the neighboring cell and visually draw the movement
+                current_cell.draw_move(self._cells[ni][nj])
 
-        # Move Down: Check the cell below (i, j+1) if there is no wall and it is not visited.
-        if j < self._num_rows - 1 and not current_cell.has_bottom_wall and not self._cells[i][j + 1].visited:
-            current_cell.draw_move(self._cells[i][j + 1])
-            if self._solve_r(i, j + 1):
-                return True
-            else:
-                current_cell.draw_move(self._cells[i][j + 1], undo=True)
+                # Recursively attempt to solve the maze from the neighboring cell
+                if self._solve_r(ni, nj):
+                    # If a solution is found, return True (to propagate the success back through the recursion)
+                    return True
+                else:
+                    # If the neighboring path is a dead end, backtrack by undoing the move visually
+                    current_cell.draw_move(self._cells[ni][nj], undo=True)
 
-        # Move Left: Check the cell to the left (i-1, j) if there is no wall and it is not visited.
-        if i > 0 and not current_cell.has_left_wall and not self._cells[i - 1][j].visited:
-            current_cell.draw_move(self._cells[i - 1][j])
-            if self._solve_r(i - 1, j):
-                return True
-            else:
-                current_cell.draw_move(self._cells[i - 1][j], undo=True)
-
-        # Move Right: Check the cell to the right (i+1, j) if there is no wall and it is not visited.
-        if i < self._num_cols - 1 and not current_cell.has_right_wall and not self._cells[i + 1][j].visited:
-            current_cell.draw_move(self._cells[i + 1][j])
-            if self._solve_r(i + 1, j):
-                return True
-            else:
-                current_cell.draw_move(self._cells[i + 1][j], undo=True)
-
-        # If no valid moves were found, this is a dead end, so return False.
+        # If no valid moves are found from the current cell, return False indicating a dead end
         return False
+
 
 
 
