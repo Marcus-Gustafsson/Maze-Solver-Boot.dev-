@@ -1,5 +1,6 @@
 from graphics import *
 from maze import Maze
+import sys
 
 def main() -> None:
     num_rows = 12
@@ -25,10 +26,21 @@ def main() -> None:
 
     margin_point = Point(margin_x, margin_y)  # Create new margin point
 
-    win = Window(screen_x, screen_y)
+    # Path to the background image in the 'images' folder
+    image_path = "images/background.png"
+
+    sys.setrecursionlimit(10000)
+    # Create the window and pass the background image path
+    win = Window(screen_x, screen_y, image_path)
 
     # Create the maze with integer cell sizes
-    maze = Maze(margin_point, num_rows, num_cols, cell_size_x, cell_size_y, win, 10)
+    maze = Maze(margin_point, num_rows, num_cols, cell_size_x, cell_size_y, win)
+    print("maze created")
+    is_solveable = maze.solve(0,0)
+    if not is_solveable:
+        print("maze can not be solved!")
+    else:
+        print("maze solved!")
     win.wait_for_close()
 
 if __name__ == "__main__":

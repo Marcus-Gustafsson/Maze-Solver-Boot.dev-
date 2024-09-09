@@ -29,6 +29,14 @@ class Tests(unittest.TestCase):
             False,
         )
 
+        # Checks if all cells "visited" are reset after breaking walls in maze
+        for col in m1._cells:
+            for cell in col:
+                self.assertEqual(
+                    cell.visited,
+                    False,
+                )
+
     def test_maze_create_cells_large(self):
         """
         Test if the Maze class can handle creating a larger grid of cells.
@@ -51,6 +59,15 @@ class Tests(unittest.TestCase):
             m1._cells[num_cols - 1][num_rows - 1].has_bottom_wall,
             False,
         )
+
+        # Checks if all cells "visited" are reset after breaking walls in maze
+        for col in m1._cells:
+            for cell in col:
+                self.assertEqual(
+                    cell.visited,
+                    False,
+                )
+
 
 
 if __name__ == "__main__":

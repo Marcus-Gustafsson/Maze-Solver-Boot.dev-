@@ -24,6 +24,11 @@ class Maze:
         if seed != None:
             random.seed(seed)
 
+        self.cell_creation_delay = 0.01  # Fast creation of cells
+        self.wall_breaking_delay = 0.02  # Slightly slower wall-breaking
+        self.pathfinding_delay = 0.3     # Slower pathfinding
+
+
         # Initialize the 2D list of cells
         self._cells = []
 
@@ -32,6 +37,7 @@ class Maze:
 
         self._break_entrance_and_exit()
         self._break_walls_r(0,0)
+        self._reset_cells_visited()
 
     def _create_cells(self):
         """
@@ -76,16 +82,18 @@ class Maze:
         # Draw the cell
         cell.draw()
         # Animate the drawing process
-        self._animate()
+        self._animate(self.cell_creation_delay)
 
-    def _animate(self) -> None:
+    def _animate(self, delay: float = 0.1) -> None:
         """
         This method redraws the window and adds a small delay to create a visible animation.
+        The delay can be passed as a parameter to control the animation speed.
         """
         if self._win is None:
             return
         self._win.redraw()  # Update the window
-        time.sleep(0.05)    # Pause for 0.05 seconds to slow down the animation
+        time.sleep(delay)  # Pause based on the provided delay
+
 
     
     def _break_entrance_and_exit(self) -> None:
@@ -158,6 +166,75 @@ class Maze:
 
             # 7. Move to the chosen neighboring cell and recursively call _break_walls_r
             self._break_walls_r(ni, nj)
+
+    
+    def _reset_cells_visited(self):
+        for col in self._cells:
+            for cell in col:
+                cell.visited = False
+
+    
+
+    def solve(self, i: int, j: int) -> None:
+        """
+        The solve() method starts the maze-solving process from the given (i, j) coordinates.
+        It calls the _solve_r method recursively to explore the maze.
+        """
+        return self._solve_r(i, j)
+
+
+    def _solve_r(self, i: int, j: int) -> bool:
+        """
+        Depth-first solution to the maze.
+        Returns True if the current cell leads to the exit, False if it is a dead end.
+        """
+        # 1. Animate the movement by redrawing the window.
+        self._animate(self.pathfinding_delay)
+
+        # 2. Mark the current cell as visited.
+        current_cell = self._cells[i][j]
+        current_cell.visited = True
+
+        # 3. Check if this is the "end" cell (bottom-right corner of the maze).
+        if i == self._num_cols - 1 and j == self._num_rows - 1:
+            return True  # Found the exit!
+
+        # 4. Explore neighboring cells (DFS).
+
+        # Move Up: Check the cell above (i, j-1) if there is no wall and it is not visited.
+        if j > 0 and not current_cell.has_top_wall and not self._cells[i][j - 1].visited:
+            current_cell.draw_move(self._cells[i][j - 1])
+            if self._solve_r(i, j - 1):
+                return True
+            else:
+                current_cell.draw_move(self._cells[i][j - 1], undo=True)
+
+        # Move Down: Check the cell below (i, j+1) if there is no wall and it is not visited.
+        if j < self._num_rows - 1 and not current_cell.has_bottom_wall and not self._cells[i][j + 1].visited:
+            current_cell.draw_move(self._cells[i][j + 1])
+            if self._solve_r(i, j + 1):
+                return True
+            else:
+                current_cell.draw_move(self._cells[i][j + 1], undo=True)
+
+        # Move Left: Check the cell to the left (i-1, j) if there is no wall and it is not visited.
+        if i > 0 and not current_cell.has_left_wall and not self._cells[i - 1][j].visited:
+            current_cell.draw_move(self._cells[i - 1][j])
+            if self._solve_r(i - 1, j):
+                return True
+            else:
+                current_cell.draw_move(self._cells[i - 1][j], undo=True)
+
+        # Move Right: Check the cell to the right (i+1, j) if there is no wall and it is not visited.
+        if i < self._num_cols - 1 and not current_cell.has_right_wall and not self._cells[i + 1][j].visited:
+            current_cell.draw_move(self._cells[i + 1][j])
+            if self._solve_r(i + 1, j):
+                return True
+            else:
+                current_cell.draw_move(self._cells[i + 1][j], undo=True)
+
+        # If no valid moves were found, this is a dead end, so return False.
+        return False
 
 
 

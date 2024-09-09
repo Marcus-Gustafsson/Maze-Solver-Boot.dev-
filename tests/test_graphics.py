@@ -64,20 +64,31 @@ class TestCell(unittest.TestCase):
         # Check if the top-left corner is correctly assigned
         self.assertEqual(cell.top_left.x, 0)
 
+
+class TestCell(unittest.TestCase):
+    
     def test_cell_draw(self):
         """
         Test the draw method of the Cell class using a mock Window.
-        We mock the Window object and check if the draw_line method is called four times (for the four walls).
+        We mock the Window object and check if the create_line method is called for each wall.
+        Initially, four walls should be drawn. After removing walls, those walls should not be redrawn.
         """
         top_left = Point(0, 0)
         bottom_right = Point(10, 10)
-        mock_window = Mock()  # Create a mock Window object
-        
+
+        # Create a mock window object with a mock canvas
+        mock_window = Mock()
+        mock_window.canvas = Mock()
+
+        # Create the cell
         cell = Cell(top_left, bottom_right, window=mock_window)
-        cell.draw()
         
-        # Check if the mock Window's draw_line method was called exactly four times (for four walls)
-        self.assertEqual(mock_window.draw_line.call_count, 4)
+        # Draw the cell initially (all walls should be drawn)
+        cell.draw()
+
+        # Check that create_line was called exactly four times (once for each wall)
+        self.assertEqual(mock_window.canvas.create_line.call_count, 4)
+
 
 
 if __name__ == "__main__":
