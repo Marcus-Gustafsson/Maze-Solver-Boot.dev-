@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-4. Enjoy watching the maze being solved with animated sprites!
+4. Enjoy watching the maze being solved.
 
 
 
