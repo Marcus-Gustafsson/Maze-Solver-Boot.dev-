@@ -1,7 +1,8 @@
 # Maze Solver
 
-This project is a visual maze-solving algorithm implemented in Python using the Tkinter and Pillow library
-The project features the creation of a maze where a character (Link) solves the maze and reaches the end (Zelda).
+This project is a visual maze-solving algorithm implemented in Python using the Tkinter and Pillow library.
+
+The project features the creation of a random maze where a character (Link) solves the maze and reaches the end (Zelda).
 
 ### Showcase
 ![Maze Solver Showcase](./images/showcase.gif)
