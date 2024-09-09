@@ -118,11 +118,12 @@ class Maze:
         self._cells[self._num_cols - 1][self._num_rows - 1].has_bottom_wall = False
         self._draw_cell(self._num_cols - 1, self._num_rows - 1)
 
-        # Position Zelda at the midpoint of the bottom wall
-        exit_cell = self._cells[self._num_cols - 1][self._num_rows - 1]
-        midpoint_x = (exit_cell.bottom_left.x + exit_cell.bottom_right.x) // 2
-        midpoint_y = exit_cell.bottom_right.y
-        self._win.create_zelda_sprite(midpoint_x, midpoint_y + 15)
+         # If window object is provided, create Zelda sprite
+        if self._win is not None:
+            exit_cell = self._cells[self._num_cols - 1][self._num_rows - 1]
+            midpoint_x = (exit_cell.bottom_left.x + exit_cell.bottom_right.x) // 2
+            midpoint_y = (exit_cell.bottom_left.y + exit_cell.bottom_right.y) // 2
+            self._win.create_zelda_sprite(midpoint_x, midpoint_y + 15)
 
     def _break_walls_r(self, i: int, j: int) -> None:
         """
