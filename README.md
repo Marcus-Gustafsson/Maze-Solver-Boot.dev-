@@ -4,7 +4,7 @@ This project is a visual maze-solving algorithm implemented in Python using the 
 The project features the creation of a maze where a character (Link) solves the maze and reaches the end (Zelda), with an animated display of the solution path.
 
 ### Showcase
-![Maze Solver Showcase](images/showcase.gif)
+![Maze Solver Showcase](./images/showcase.gif)
 
 ### Features
 - **Maze Generation**: A randomized maze generation using depth-first search algorithm, which visually shows the walls and pathways as they are created.
