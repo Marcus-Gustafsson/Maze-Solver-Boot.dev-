@@ -28,7 +28,7 @@ def main() -> None:
     win = Window(screen_x, screen_y)
 
     # Create the maze with integer cell sizes
-    maze = Maze(margin_point, num_rows, num_cols, cell_size_x, cell_size_y, win)
+    maze = Maze(margin_point, num_rows, num_cols, cell_size_x, cell_size_y, win, 10)
     win.wait_for_close()
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 from graphics import Cell, Point
 import time
+import random
 
 class Maze:
     def __init__(
@@ -9,7 +10,8 @@ class Maze:
         num_cols,
         cell_size_x,
         cell_size_y,
-        win,
+        win = None,
+        seed = None
     ):
         # Store parameters as attributes
         self._x1 = top_left.x  # x-coordinate of top-left corner of the maze
@@ -19,12 +21,17 @@ class Maze:
         self._cell_size_x = cell_size_x  # Width of each cell
         self._cell_size_y = cell_size_y  # Height of each cell
         self._win = win  # Window to draw on
+        if seed != None:
+            random.seed(seed)
 
         # Initialize the 2D list of cells
         self._cells = []
 
         # Create the maze's cells
         self._create_cells()
+
+        self._break_entrance_and_exit()
+        self._break_walls_r(0,0)
 
     def _create_cells(self):
         """
@@ -58,10 +65,12 @@ class Maze:
             for j in range(self._num_rows):
                 self._draw_cell(i, j)
 
-    def _draw_cell(self, i, j):
+    def _draw_cell(self, i, j) -> None:
         """
         This method simply draws the cell at position (i, j).
         """
+        if self._win is None:
+            return
         # Retrieve the cell from the list
         cell = self._cells[i][j]
         # Draw the cell
@@ -69,9 +78,86 @@ class Maze:
         # Animate the drawing process
         self._animate()
 
-    def _animate(self):
+    def _animate(self) -> None:
         """
         This method redraws the window and adds a small delay to create a visible animation.
         """
+        if self._win is None:
+            return
         self._win.redraw()  # Update the window
         time.sleep(0.05)    # Pause for 0.05 seconds to slow down the animation
+
+    
+    def _break_entrance_and_exit(self) -> None:
+        """
+        Breaks down the entrance wall and exit wall to the maze (top top-left = entrance, bottom bottom-right = exit)
+        """
+        self._cells[0][0].has_top_wall = False
+        self._draw_cell(0, 0)
+        self._cells[self._num_cols - 1][self._num_rows - 1].has_bottom_wall = False
+        self._draw_cell(self._num_cols - 1, self._num_rows - 1)
+
+    def _break_walls_r(self, i, j):
+        """
+        Depth-first traversal through the cells, breaking down walls as it goes.
+        """
+        # 1. Mark the current cell as visited
+        current_cell = self._cells[i][j]
+        current_cell.visited = True  # Add a 'visited' attribute to the Cell class
+
+        # 2. Infinite loop to keep exploring until we can't go any further
+        while True:
+            to_visit = []  # Create a list to hold neighboring cells that are valid to visit
+
+            # 3. Check neighboring cells (up, down, left, right) if they're within bounds and not visited
+
+            # Move Up: Check the cell above (i, j-1)
+            if j > 0 and not self._cells[i][j - 1].visited:
+                to_visit.append(("up", i, j - 1))
+
+            # Move Down: Check the cell below (i, j+1)
+            if j < self._num_rows - 1 and not self._cells[i][j + 1].visited:
+                to_visit.append(("down", i, j + 1))
+
+            # Move Left: Check the cell to the left (i-1, j)
+            if i > 0 and not self._cells[i - 1][j].visited:
+                to_visit.append(("left", i - 1, j))
+
+            # Move Right: Check the cell to the right (i+1, j)
+            if i < self._num_cols - 1 and not self._cells[i + 1][j].visited:
+                to_visit.append(("right", i + 1, j))
+
+            # 4. If there are no cells to visit, return to stop the recursion
+            if len(to_visit) == 0:
+                self._draw_cell(i, j)  # Draw the current cell
+                return
+
+            # 5. Pick a random direction from the possible directions
+            direction, ni, nj = random.choice(to_visit)
+
+            # 6. Knock down the wall between the current cell and the chosen cell
+            if direction == "up":
+                # Remove the top wall of the current cell and the bottom wall of the above cell
+                current_cell.has_top_wall = False
+                self._cells[ni][nj].has_bottom_wall = False
+
+            elif direction == "down":
+                # Remove the bottom wall of the current cell and the top wall of the below cell
+                current_cell.has_bottom_wall = False
+                self._cells[ni][nj].has_top_wall = False
+
+            elif direction == "left":
+                # Remove the left wall of the current cell and the right wall of the left cell
+                current_cell.has_left_wall = False
+                self._cells[ni][nj].has_right_wall = False
+
+            elif direction == "right":
+                # Remove the right wall of the current cell and the left wall of the right cell
+                current_cell.has_right_wall = False
+                self._cells[ni][nj].has_left_wall = False
+
+            # 7. Move to the chosen neighboring cell and recursively call _break_walls_r
+            self._break_walls_r(ni, nj)
+
+
+

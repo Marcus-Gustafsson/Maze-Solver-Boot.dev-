@@ -1,5 +1,6 @@
 from tkinter import Tk, BOTH, Canvas
 import time
+import random
 
 
 class Point():
@@ -93,14 +94,14 @@ class Window:
 
 class Cell:
 
-    def __init__(self, top_left: Point, bottom_right: Point, window: Window) -> None:
+    def __init__(self, top_left: Point, bottom_right: Point, window: Window = None) -> None:
         self.has_left_wall: bool = True
         self.has_right_wall: bool = True
         self.has_top_wall: bool = True
         self.has_bottom_wall: bool = True
         self.top_left: Point = top_left
         self._win: Window = window
-
+        self.visited: bool = False
         # Calculate width and height
         width = bottom_right.x - top_left.x
         height = bottom_right.y - top_left.y
@@ -123,17 +124,30 @@ class Cell:
         """
         Draw the walls of the cell.
         """
+        
+        if self._win is None:
+            return
+        
+
         if self.has_left_wall:
             self._win.draw_line(Line(self.bottom_left, self.top_left),"green")
+        else:
+            self._win.draw_line(Line(self.bottom_left, self.top_left),"white")
 
         if self.has_top_wall:
             self._win.draw_line(Line(self.top_left, self.top_right),"green")
+        else:
+            self._win.draw_line(Line(self.top_left, self.top_right),"white")
 
         if self.has_right_wall:
             self._win.draw_line(Line(self.top_right, self.bottom_right),"green")
+        else:
+            self._win.draw_line(Line(self.top_right, self.bottom_right),"white")
 
         if self.has_bottom_wall:
             self._win.draw_line(Line(self.bottom_right, self.bottom_left),"green")
+        else:
+            self._win.draw_line(Line(self.bottom_right, self.bottom_left),"white")
 
     
     def draw_move(self, to_cell, undo: bool = False) -> None:
@@ -144,3 +158,6 @@ class Cell:
         else:
             line_to_draw = Line(self.middle, to_cell.middle)
             self._win.draw_line(line_to_draw, "gray")
+
+        
+
